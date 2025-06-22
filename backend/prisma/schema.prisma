@@ -1,0 +1,196 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  avatar    String?
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  teams     Team[]
+  players   Player[]
+  matches   Match[]
+  comments  Comment[]
+
+  @@map("users")
+}
+
+// User roles
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+}
+
+// Team model
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  shortName   String?
+  logo        String?
+  founded     Int?
+  stadium     String?
+  city        String?
+  country     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  players     Player[]
+  homeMatches Match[]    @relation("HomeTeam")
+  awayMatches Match[]    @relation("AwayTeam")
+  leagues     League[]   @relation("TeamLeagues")
+
+  @@map("teams")
+}
+
+// Player model
+model Player {
+  id          String       @id @default(cuid())
+  firstName   String
+  lastName    String
+  photo       String?
+  birthDate   DateTime?
+  nationality String?
+  position    Position
+  jerseyNumber Int?
+  height      Float?
+  weight      Float?
+  marketValue Decimal?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  teamId      String
+  team        Team         @relation(fields: [teamId], references: [id])
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  matchStats  MatchStats[]
+
+  @@map("players")
+}
+
+// Player positions
+enum Position {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+
+// League model
+model League {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  shortName   String?
+  country     String
+  season      String
+  logo        String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  teams   Team[]  @relation("TeamLeagues")
+  matches Match[]
+
+  @@map("leagues")
+}
+
+// Match model
+model Match {
+  id          String      @id @default(cuid())
+  matchDate   DateTime
+  venue       String?
+  status      MatchStatus @default(SCHEDULED)
+  homeScore   Int?
+  awayScore   Int?
+  attendance  Int?
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  homeTeamId String
+  homeTeam   Team   @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId String
+  awayTeam   Team   @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  leagueId   String?
+  league     League? @relation(fields: [leagueId], references: [id])
+  userId     String
+  user       User    @relation(fields: [userId], references: [id])
+
+  matchStats MatchStats[]
+  comments   Comment[]
+
+  @@map("matches")
+}
+
+// Match status
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+// Match statistics
+model MatchStats {
+  id         String @id @default(cuid())
+  goals      Int    @default(0)
+  assists    Int    @default(0)
+  yellowCards Int   @default(0)
+  redCards   Int    @default(0)
+  minutesPlayed Int @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  matchId  String
+  match    Match  @relation(fields: [matchId], references: [id])
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id])
+
+  @@unique([matchId, playerId])
+  @@map("match_stats")
+}
+
+// Comment model for match discussions
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id])
+
+  @@map("comments")
+}
