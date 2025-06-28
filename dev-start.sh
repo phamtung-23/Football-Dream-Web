@@ -17,7 +17,7 @@ echo "✅ Development environment variables loaded"
 
 # Start development containers
 echo "🚀 Starting development containers..."
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.dev.yml up --build -d
 
 echo "🎉 Development environment started!"
 echo ""

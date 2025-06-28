@@ -20,12 +20,11 @@ services:
     volumes:
       - ./api-gateway:/app
       - /app/node_modules
-      - /app/dist
     ports:
       - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
     networks:
       - app-network
-    command: npm run start:dev
+    command: sh -c "rm -rf dist && npm run start:dev"
 
   nginx:
     build:
@@ -62,12 +61,11 @@ services:
     volumes:
       - ./auth-service:/app
       - /app/node_modules
-      - /app/dist
     ports:
       - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
     networks:
       - app-network
-    command: npm run start:dev
+    command: sh -c "rm -rf dist && npm run start:dev"
 
   user-service:
     build:
@@ -88,12 +86,11 @@ services:
     volumes:
       - ./user-service:/app
       - /app/node_modules
-      - /app/dist
     ports:
       - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
     networks:
       - app-network
-    command: npm run start:dev
+    command: sh -c "rm -rf dist && yarn start:dev"
 
   teams-service:
     build:
@@ -114,12 +111,11 @@ services:
     volumes:
       - ./teams-service:/app
       - /app/node_modules
-      - /app/dist
     ports:
       - "${TEAMS_SERVICE_PORT}:${TEAMS_SERVICE_PORT}"
     networks:
       - app-network
-    command: npm run start:dev
+    command: sh -c "rm -rf dist && npm run start:dev"
 
   postgres:
     image: postgres:16-alpine
