@@ -1,0 +1,189 @@
+# version: '3.8'
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - redis
+      - auth-service
+      - user-service
+      - teams-service
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - PORT=${API_GATEWAY_PORT}
+      - API_PREFIX=${API_PREFIX}
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
+    networks:
+      - app-network
+    command: npm run start:dev
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "${NGINX_PORT}:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL_AUTH}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - PORT=${AUTH_SERVICE_PORT}
+      - API_PREFIX=${API_PREFIX}
+    volumes:
+      - ./auth-service:/app
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
+    networks:
+      - app-network
+    command: npm run start:dev
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL_USER}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - PORT=${USER_SERVICE_PORT}
+      - API_PREFIX=${API_PREFIX}
+    volumes:
+      - ./user-service:/app
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    networks:
+      - app-network
+    command: npm run start:dev
+
+  teams-service:
+    build:
+      context: ./teams-service
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL_TEAMS}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - PORT=${TEAMS_SERVICE_PORT}
+      - API_PREFIX=${API_PREFIX}
+    volumes:
+      - ./teams-service:/app
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "${TEAMS_SERVICE_PORT}:${TEAMS_SERVICE_PORT}"
+    networks:
+      - app-network
+    command: npm run start:dev
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    ports:
+      - "${REDIS_EXTERNAL_PORT}:6379"
+    volumes:
+      - redis-dev-data:/data
+    networks:
+      - app-network
+    command: redis-server --appendonly yes
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin-dev-data:/var/lib/pgadmin
+    networks:
+      - app-network
+
+  redis-commander:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:${REDIS_HOST}:${REDIS_PORT}
+    ports:
+      - "${REDIS_COMMANDER_PORT}:8081"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  # Development tools
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - app-network
+
+volumes:
+  postgres-dev-data:
+  redis-dev-data:
+  pgadmin-dev-data:
+
+networks:
+  app-network:
+    driver: bridge

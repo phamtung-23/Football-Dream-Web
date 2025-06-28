@@ -1,0 +1,67 @@
+### Football Management System API Gateway Tests
+### Access via nginx proxy on port 80
+
+@baseUrl = http://localhost/api/v1
+@authToken = 
+
+### Auth Service Tests ###
+
+# Register new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "testpassword123",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+###
+
+# Login user
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "testpassword123"
+}
+
+###
+
+# Get user profile (requires JWT token from login)
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+### User Service Tests ###
+
+# Get user by ID (requires JWT token)
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+
+###
+
+# Update user (requires JWT token)
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "firstName": "Updated",
+  "lastName": "Name",
+  "email": "updated@example.com"
+}
+
+### Teams Service Tests ###
+
+# Get all teams
+GET {{baseUrl}}/teams
+
+###
+
+# Get team by ID
+GET {{baseUrl}}/teams/1
+
+### Check API Documentation (Swagger)
+GET http://localhost/api/docs 

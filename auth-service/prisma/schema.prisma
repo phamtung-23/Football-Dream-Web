@@ -1,0 +1,29 @@
+// auth-service/prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+model User {
+  id                      String   @id @default(cuid())
+  email                   String   @unique
+  password                String
+  firstName               String?
+  lastName                String?
+  role                    String   @default("USER")
+  isActive                Boolean  @default(true)
+  isEmailVerified         Boolean  @default(false)
+  avatar                  String?
+  emailVerificationToken  String?
+  passwordResetToken      String?
+  passwordResetExpires    DateTime?
+  otpCode                 String?
+  otpExpires              DateTime?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
