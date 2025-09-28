@@ -32,6 +32,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RateLimit } from './decorators/rate-limit.decorator';
 import { AuthenticatedRequest } from './interfaces/auth.interface';
+import { ResponseHelper } from '../../common/helpers/response.helper';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -49,7 +50,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   login(@Request() req: AuthenticatedRequest) {
-    return this.authService.login(req.user);
+    const result = this.authService.login(req.user);
+    return ResponseHelper.success(result, 'Login successful');
   }
 
   @ApiOperation({ summary: 'Register new user' })
@@ -125,7 +127,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Change password' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiBody({ type: ChangePasswordDto })
   @ApiResponse({
     status: 200,
@@ -167,7 +169,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 200,
     description: 'Current user profile',
@@ -175,17 +177,19 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req: AuthenticatedRequest) {
-    return {
-      user: {
-        id: req.user.id,
-        email: req.user.email,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        role: req.user.role,
-        isActive: req.user.isActive,
-        avatar: req.user.avatar,
-        createdAt: req.user.createdAt,
-      },
+    const userProfile = {
+      id: req.user.id,
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      role: req.user.role,
+      isActive: req.user.isActive,
+      avatar: req.user.avatar,
+      createdAt: req.user.createdAt,
     };
+    return ResponseHelper.success(
+      userProfile,
+      'Profile retrieved successfully',
+    );
   }
 }
