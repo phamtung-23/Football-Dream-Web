@@ -3,7 +3,7 @@
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     restart: always
     environment:
       POSTGRES_USER: football_user
@@ -12,7 +12,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
     networks:
       - football_network
 
@@ -28,39 +28,9 @@ services:
     networks:
       - football_network
 
-  # pgAdmin (Optional - Database management UI)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@football.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - football_network
-    depends_on:
-      - postgres
-
-  # Redis Commander (Optional - Redis management UI)
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    restart: always
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    ports:
-      - "8081:8081"
-    networks:
-      - football_network
-    depends_on:
-      - redis
 
 volumes:
-  postgres_data:
   redis_data:
-  pgadmin_data:
 
 networks:
   football_network:

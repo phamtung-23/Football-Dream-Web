@@ -6,10 +6,10 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { TeamsModule } from './teams/teams.module';
-import { PlayersModule } from './players/players.module';
-import { MatchesModule } from './matches/matches.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { TeamsModule } from './modules/teams/teams.module';
+import { PlayersModule } from './modules/players/players.module';
+import { MatchesModule } from './modules/matches/matches.module';
 
 @Module({
   imports: [

@@ -32,7 +32,6 @@ async function bootstrap() {
     .setTitle('Football Management API')
     .setDescription('A comprehensive football management system API')
     .setVersion('1.0')
-    .addTag('football')
     .addBearerAuth(
       {
         type: 'http',
