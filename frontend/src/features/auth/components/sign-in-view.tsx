@@ -1,8 +1,7 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { GitHubLogoIcon } from '@radix-ui/react-icons';
-import { IconStar } from '@tabler/icons-react';
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import UserAuthForm from './user-auth-form';
 
@@ -23,54 +22,46 @@ export default function SignInViewPage({ stars }: { stars: number }) {
       >
         Login
       </Link>
-      <div className='bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r'>
-        <div className='absolute inset-0 bg-zinc-900' />
-        <div className='relative z-20 flex items-center text-lg font-medium'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='mr-2 h-6 w-6'
-          >
-            <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' />
-          </svg>
-          Logo
+      <div className='relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r'>
+        {/* Background image from Unsplash */}
+        <div className='absolute inset-0'>
+          <Image
+            src='https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
+            alt='Football stadium background'
+            fill
+            className='object-cover'
+            priority
+          />
+          <div className='absolute inset-0 bg-black/40' />
         </div>
+        
+        <div className='relative z-20 flex items-center text-lg font-medium'>
+          <Image
+            src='https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2093&q=80'
+            alt='Dream Football Logo'
+            width={32}
+            height={32}
+            className='mr-2 h-8 w-8 rounded-full'
+          />
+          Dream Football
+        </div>
+        
         <div className='relative z-20 mt-auto'>
           <blockquote className='space-y-2'>
             <p className='text-lg'>
-              &ldquo;This starter template has saved me countless hours of work
-              and helped me deliver projects to my clients faster than ever
-              before.&rdquo;
+              &ldquo;Build your ultimate football team and lead them to victory in the most immersive football management experience.&rdquo;
             </p>
-            <footer className='text-sm'>Random Dude</footer>
+            <footer className='text-sm'>Dream Football Team</footer>
           </blockquote>
         </div>
       </div>
       <div className='flex h-full items-center justify-center p-4 lg:p-8'>
         <div className='flex w-full max-w-md flex-col items-center justify-center space-y-6'>
-          {/* github link  */}
-          <Link
-            className={cn('group inline-flex hover:text-yellow-200')}
-            target='_blank'
-            href={'https://github.com/kiranism/next-shadcn-dashboard-starter'}
-          >
-            <div className='flex items-center'>
-              <GitHubLogoIcon className='size-4' />
-              <span className='ml-1 inline'>Star on GitHub</span>{' '}
-            </div>
-            <div className='ml-2 flex items-center gap-1 text-sm md:flex'>
-              <IconStar
-                className='size-4 text-gray-500 transition-all duration-300 group-hover:text-yellow-300'
-                fill='currentColor'
-              />
-              <span className='font-display font-medium'>{stars}</span>
-            </div>
-          </Link>
+          {/* Welcome message */}
+          <div className='text-center'>
+            <h1 className='text-3xl font-bold text-foreground mb-2'>Welcome to Dream Football</h1>
+            <p className='text-muted-foreground text-lg'>Your ultimate football management experience</p>
+          </div>
           <UserAuthForm mode="signin" />
 
           <p className='text-muted-foreground px-8 text-center text-sm'>

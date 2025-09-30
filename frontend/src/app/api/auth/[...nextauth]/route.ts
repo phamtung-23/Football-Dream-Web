@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import { NextAuthOptions } from 'next-auth';
 
 // Mock user database - replace with your actual database
@@ -49,11 +50,16 @@ export const authOptions: NextAuthOptions = {
         return null;
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.username = user.username;
+        // For Google OAuth users, use email as username if no username is provided
+        token.username = user.username || user.email?.split('@')[0] || 'user';
       }
       return token;
     },

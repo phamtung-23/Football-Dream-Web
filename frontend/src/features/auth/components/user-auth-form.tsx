@@ -8,7 +8,7 @@ import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import GithubSignInButton from './github-auth-button';
+import GoogleSignInButton from './google-auth-button';
 import { FormInput } from '@/components/forms/form-input';
 import Link from 'next/link';
 
@@ -191,7 +191,9 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
               </span>
             </div>
           </div>
-          <GithubSignInButton />
+          <div className='space-y-2'>
+            <GoogleSignInButton />
+          </div>
         </>
       )}
       
