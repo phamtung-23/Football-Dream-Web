@@ -121,23 +121,6 @@ export const authApi = {
       body: JSON.stringify({ token }),
     }),
 
-  /**
-   * Send OTP
-   */
-  sendOtp: (email: string) =>
-    apiRequest('/auth/send-otp', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    }),
-
-  /**
-   * Verify OTP
-   */
-  verifyOtp: (email: string, otpCode: string) =>
-    apiRequest('/auth/verify-otp', {
-      method: 'POST',
-      body: JSON.stringify({ email, otpCode }),
-    }),
 
   /**
    * Get user profile

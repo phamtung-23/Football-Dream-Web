@@ -40,14 +40,6 @@ export interface VerifyEmailRequest {
   token: string;
 }
 
-export interface SendOtpRequest {
-  email: string;
-}
-
-export interface VerifyOtpRequest {
-  email: string;
-  otpCode: string;
-}
 
 export interface ChangePasswordRequest {
   currentPassword: string;

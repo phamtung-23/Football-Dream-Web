@@ -7,5 +7,3 @@ export { default as ForgotPasswordForm } from './forgot-password-form';
 export { default as ResetPasswordView } from './reset-password-view';
 export { default as ResetPasswordForm } from './reset-password-form';
 export { default as VerifyEmailAutoView } from './verify-email-auto-view';
-export { default as OtpLoginView } from './otp-login-view';
-export { default as OtpLoginForm } from './otp-login-form';

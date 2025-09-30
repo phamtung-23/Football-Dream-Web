@@ -192,13 +192,7 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
             disabled={loading}
           />
           
-          <div className='flex justify-between text-sm'>
-            <Link 
-              href='/auth/otp-login' 
-              className='text-primary hover:underline'
-            >
-              Login with OTP
-            </Link>
+          <div className='flex justify-end text-sm'>
             <Link 
               href='/auth/forgot-password' 
               className='text-primary hover:underline'
