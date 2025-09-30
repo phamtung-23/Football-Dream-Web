@@ -2,6 +2,8 @@
 import { SessionProvider } from 'next-auth/react';
 import React from 'react';
 import { ActiveThemeProvider } from '../active-theme';
+import { AuthProvider } from '@/contexts/auth-context';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function Providers({
   activeThemeValue,
@@ -14,7 +16,10 @@ export default function Providers({
     <>
       <ActiveThemeProvider initialTheme={activeThemeValue}>
         <SessionProvider>
-          {children}
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </SessionProvider>
       </ActiveThemeProvider>
     </>

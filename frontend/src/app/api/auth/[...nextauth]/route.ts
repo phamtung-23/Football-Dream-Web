@@ -3,51 +3,58 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { NextAuthOptions } from 'next-auth';
 
-// Mock user database - replace with your actual database
-const users = [
-  {
-    id: '1',
-    username: 'admin',
-    email: 'admin@example.com',
-    password: 'password123', // In production, this should be hashed
-    name: 'Admin User',
-  },
-  {
-    id: '2',
-    username: 'user',
-    email: 'user@example.com',
-    password: 'password123', // In production, this should be hashed
-    name: 'Regular User',
-  },
-];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        username: { label: 'Username', type: 'text' },
+        email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const user = users.find(
-          (u) => u.username === credentials.username && u.password === credentials.password
-        );
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
-        if (user) {
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            username: user.username,
-          };
+          if (!response.ok) {
+            return null;
+          }
+
+          const data = await response.json();
+          
+          if (data.status === 'success' && data.data.access_token) {
+            const { user, access_token } = data.data;
+            return {
+              id: user.id,
+              name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+              email: user.email,
+              username: user.email.split('@')[0],
+              accessToken: access_token,
+              role: user.role,
+              isEmailVerified: user.isEmailVerified,
+            };
+          }
+
+          return null;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Auth error:', error);
+          return null;
         }
-
-        return null;
       },
     }),
     GoogleProvider({
@@ -56,9 +63,14 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        // For Google OAuth users, use email as username if no username is provided
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (user && account) {
+        if (account.provider === 'credentials') {
+          token.accessToken = user.accessToken;
+          token.role = user.role;
+          token.isEmailVerified = user.isEmailVerified;
+        }
         token.username = user.username || user.email?.split('@')[0] || 'user';
       }
       return token;
@@ -67,6 +79,9 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.sub!;
         session.user.username = token.username as string;
+        session.accessToken = token.accessToken as string;
+        session.user.role = token.role as string;
+        session.user.isEmailVerified = token.isEmailVerified as boolean;
       }
       return session;
     },

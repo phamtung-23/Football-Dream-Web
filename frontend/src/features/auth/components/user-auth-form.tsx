@@ -2,26 +2,32 @@
 import { Button } from '@/components/ui/button';
 import { FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
 import * as z from 'zod';
 import GoogleSignInButton from './google-auth-button';
 import { FormInput } from '@/components/forms/form-input';
+import { authApi, handleApiError } from '@/lib/api';
 import Link from 'next/link';
 
 const signInSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required' }),
+  email: z.string().email({ message: 'Enter a valid email address' }),
   password: z.string().min(1, { message: 'Password is required' })
 });
 
 const signUpSchema = z.object({
-  username: z.string().min(3, { message: 'Username must be at least 3 characters' }),
   email: z.string().email({ message: 'Enter a valid email address' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
-  confirmPassword: z.string()
+  password: z.string()
+    .min(6, { message: 'Password must be at least 6 characters' })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/, {
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    }),
+  confirmPassword: z.string(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -45,7 +51,7 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
   const signInForm = useForm<SignInFormValue>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: ''
     }
   });
@@ -53,10 +59,11 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
   const signUpForm = useForm<SignUpFormValue>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      username: '',
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      firstName: '',
+      lastName: ''
     }
   });
 
@@ -64,7 +71,7 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
     startTransition(async () => {
       try {
         const result = await signIn('credentials', {
-          username: data.username,
+          email: data.email,
           password: data.password,
           redirect: false,
         });
@@ -81,15 +88,24 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
     });
   };
 
-  const onSubmitSignUp = async (_data: SignUpFormValue) => {
+  const onSubmitSignUp = async (data: SignUpFormValue) => {
     startTransition(async () => {
       try {
-        // Handle sign up logic here
-        // For now, we'll just show a success message
-        toast.success('Account created successfully! Please sign in.');
-        router.push('/auth/sign-in');
+        const result = await authApi.register({
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        });
+
+        if (result.status === 'success') {
+          toast.success(result.message || 'Registration successful! Please check your email to verify your account.');
+          router.push('/auth/sign-in');
+        } else {
+          toast.error(result.message || 'Registration failed');
+        }
       } catch (error) {
-        toast.error('Something went wrong. Please try again.');
+        handleApiError(error, toast);
       }
     });
   };
@@ -104,17 +120,25 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
           <FormProvider {...signUpForm}>
           <FormInput
             control={signUpForm.control}
-            name='username'
-            label='Username'
-            placeholder='Enter your username...'
+            name='email'
+            label='Email'
+            placeholder='Enter your email...'
             disabled={loading}
           />
           
           <FormInput
             control={signUpForm.control}
-            name='email'
-            label='Email'
-            placeholder='Enter your email...'
+            name='firstName'
+            label='First Name (Optional)'
+            placeholder='Enter your first name...'
+            disabled={loading}
+          />
+          
+          <FormInput
+            control={signUpForm.control}
+            name='lastName'
+            label='Last Name (Optional)'
+            placeholder='Enter your last name...'
             disabled={loading}
           />
           
@@ -153,9 +177,9 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
           <FormProvider {...signInForm}>
           <FormInput
             control={signInForm.control}
-            name='username'
-            label='Username'
-            placeholder='Enter your username...'
+            name='email'
+            label='Email'
+            placeholder='Enter your email...'
             disabled={loading}
           />
           
@@ -167,6 +191,21 @@ export default function UserAuthForm({ mode = 'signin' }: UserAuthFormProps) {
             placeholder='Enter your password...'
             disabled={loading}
           />
+          
+          <div className='flex justify-between text-sm'>
+            <Link 
+              href='/auth/otp-login' 
+              className='text-primary hover:underline'
+            >
+              Login with OTP
+            </Link>
+            <Link 
+              href='/auth/forgot-password' 
+              className='text-primary hover:underline'
+            >
+              Forgot password?
+            </Link>
+          </div>
           
           <Button
             disabled={loading}

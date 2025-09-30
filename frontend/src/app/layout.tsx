@@ -1,5 +1,4 @@
 import Providers from '@/components/layout/providers';
-import { Toaster } from '@/components/ui/sonner';
 import { fontVariables } from '@/lib/font';
 import ThemeProvider from '@/components/layout/ThemeToggle/theme-provider';
 import { cn } from '@/lib/utils';
@@ -66,7 +65,6 @@ export default async function RootLayout({
             enableColorScheme
           >
             <Providers activeThemeValue={activeThemeValue as string}>
-              <Toaster />
               {children}
             </Providers>
           </ThemeProvider>
