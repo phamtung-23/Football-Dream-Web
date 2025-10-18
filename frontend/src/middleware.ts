@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 export default withAuth(
   function middleware(req: NextRequest) {
     // Add any additional middleware logic here if needed
+    console.log('middleware', req.nextUrl.pathname);
   },
   {
     callbacks: {

@@ -51,9 +51,10 @@ export default function ProductForm({
   pageTitle: string;
 }) {
   const defaultValues = {
+    image: undefined,
     name: initialData?.name || '',
     category: initialData?.category || '',
-    price: initialData?.price || undefined,
+    price: initialData?.price || 0,
     description: initialData?.description || ''
   };
 
@@ -66,6 +67,7 @@ export default function ProductForm({
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Form submission logic would be implemented here
+    // eslint-disable-next-line no-console
     console.log(values);
     router.push('/dashboard/product');
   }
@@ -80,7 +82,7 @@ export default function ProductForm({
       <CardContent>
         <Form
           form={form}
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={onSubmit}
           className='space-y-8'
         >
           <FormFileUpload
